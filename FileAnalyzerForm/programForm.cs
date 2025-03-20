@@ -1,83 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
-//using System.ComponentModel;
-//using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
 
-//using System.Linq;
-//using System.Net.PeerToPeer.Collaboration;
-//using System.Text;
-//using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace FileAnalyzerForm
 {
     public partial class programForm : Form
     {
-        private programForm pF;
-        private Methods m;
+        private Methods _fileExtensions;
 
         public programForm()
         {
             InitializeComponent();
-            this.Text = "Altıgen Şekli Form";
-            this.Size = new Size(800, 800);
-            this.FormBorderStyle = FormBorderStyle.None;
-            this.Paint += new PaintEventHandler(this.programForm_Paint);
+            this.Text = "FileAnalyzer";
 
-            CreateHexagonShape();
+            //this.Size = new Size(800, 800);
+            //this.FormBorderStyle = FormBorderStyle.None;
+           // this.Paint += new PaintEventHandler(this.programForm_Paint);
+
+           // CreateHexagonShape();
         }
-        private void programForm_Paint(object sender, PaintEventArgs e)
-        {
-            // Kenarlık için renk ve kalınlık belirleyin
-            Pen borderPen = new Pen(Color.Blue, 5); // Mavi renkte 5 piksel kalınlığında kenarlık
-
-            // Kenarlık çizimlerini yapıyoruz
-            int kenarlikUzunlugu = 30; // Kenarlığın uzunluğunu kısaltmak için burada 30px belirledik
-
-            // Sol kenar (kısa)
-            e.Graphics.DrawLine(borderPen, 0, 0, 0, kenarlikUzunlugu); // Sol üstten aşağıya doğru çiz
-                                                                       // Sağ kenar (kısa)
-            e.Graphics.DrawLine(borderPen, this.Width - 1, 0, this.Width - 1, kenarlikUzunlugu); // Sağ üstten aşağıya doğru çiz
-                                                                                                 // Alt kenar (kısa)
-            e.Graphics.DrawLine(borderPen, 0, this.Height - 1, this.Width - 1, this.Height - 1); // Alt kenar boyunca çiz
-
-            // Üst kenar (tam uzunlukta)
-            e.Graphics.DrawLine(borderPen, 0, 0, this.Width - 1, 0); // Üst kenar boyunca çiz
-
-            // Diğer kenarları çizmek için
-            // Sol kenar
-            e.Graphics.DrawLine(borderPen, 0, kenarlikUzunlugu, 0, this.Height - 1);
-            // Sağ kenar
-            e.Graphics.DrawLine(borderPen, this.Width - 1, kenarlikUzunlugu, this.Width - 1, this.Height - 1);
-        }
-        private void CreateHexagonShape()
-        {
-            // GraphicsPath oluşturun
-            System.Drawing.Drawing2D.GraphicsPath path = new System.Drawing.Drawing2D.GraphicsPath();
-
-            // Altıgeni tanımlayın (örnek bir altıgen şekli)
-            path.AddPolygon(new Point[]
-            {
-            new Point(295, 46),   // Üst sol
-            new Point(335, 135),  // Üst orta
-            new Point(750, 135),  // Üst sağ
-            new Point(750, 720),  // sağ
-            new Point(41, 720),  // Sol alt
-            new Point(41, 46)   // Sol üst
-            });
-
-            // Form'un şekli olarak GraphicsPath'i ayarlayın
-            this.Region = new Region(path);
-        }
-
-        private void cmbFileType_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-
-        }
+        
 
         public void programForm_Load(object sender, EventArgs e)
         {
@@ -93,9 +38,14 @@ namespace FileAnalyzerForm
         {
             try
             {
-                // Dosya türüne göre tercih numarasını belirle
-                m = new Methods(dataGridView1); // Burada da kullanabilirsin
-                string selectedFileType = cmbFileType.SelectedItem.ToString();
+                //Dosya türüne göre tercih numarasını belirle
+                _fileExtensions = new Methods(dataGridView1); // Burada da kullanabilirsin
+            if (cmbFileType.SelectedItem is null)
+            {
+                MessageBox.Show("Geçerli bir dosya yolu seçiniz.");
+                return;
+            }
+            string selectedFileType = cmbFileType.SelectedItem.ToString();
                 int prefer = 0;
 
                 if (selectedFileType == "TXT")
@@ -112,27 +62,27 @@ namespace FileAnalyzerForm
                 }
 
                 // Dosya yolunu almak için filePrefer metodunu çağır
-                string filePath = m.filePrefer(prefer);
+                string filePath = _fileExtensions.FilePrefer(prefer);
 
                 // Dosya yolu boş değilse, yükleme işlemini başlat
                 if (!string.IsNullOrEmpty(filePath))
                 {
                     // Dosyayı yüklemek için asenkron fonksiyonu çağır
                     await LoadFileAsync(filePath);
-                    m.totalWordSay(filePath, prefer);
-                    m.wordSay(filePath, prefer);
+                    _fileExtensions.TotalWordSay(filePath, prefer);
+                    _fileExtensions.WordSay(filePath, prefer);
                 }
                 else
                 {
                     MessageBox.Show("Geçerli bir dosya yolu bulunamadı.");
                 }
-            }
+        }
             catch (Exception ex)
             {
                 // Hata mesajı göster
                 MessageBox.Show($"Hata: {ex.Message}");
             }
-        }
+}
 
 
         private async Task LoadFileAsync(string filePath)
@@ -140,7 +90,7 @@ namespace FileAnalyzerForm
             // ProgressBar'ı sıfırla
             progressBar1.Value = 0;
             labelYuzde.Text = "0%";
-
+            //lblPercentage.Text = "0%";
             try
             {
                 FileInfo fileInfo = new FileInfo(filePath);
@@ -183,6 +133,11 @@ namespace FileAnalyzerForm
                     MessageBox.Show($"Dosya yüklenirken bir hata oluştu: {ex.Message}");
                 }));
             }
+        }
+
+        private void programForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Environment.Exit(0);
         }
     }
 }

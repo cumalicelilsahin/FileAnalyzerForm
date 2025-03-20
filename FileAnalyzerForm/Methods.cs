@@ -11,13 +11,12 @@ namespace FileAnalyzerForm
     public class Methods
     {
         private programForm _programForm;
-        private loginForm lF;
+        private loginForm _loginForm;
         private DataGridView gridView;
-
 
         public Methods(loginForm form)
         {
-            lF = form;
+            _loginForm = form;
         }
 
         public Methods(programForm form)
@@ -30,14 +29,17 @@ namespace FileAnalyzerForm
         }
 
 
-        public string Login(string username, string password, Form currentForm)
+        public string Login(string username, string password, Form loginForm)
         {
             if (username == "CCS" && password == "123")
             {
                 MessageBox.Show("Giriş başarılı, Hoşgeldiniz", "INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                currentForm.Hide();
-                programForm programForm = new programForm();
-                programForm.Show();
+
+                // Formu kapatma işlemi
+                loginForm.Invoke((MethodInvoker)delegate {
+                    loginForm.Close(); // Giriş formunu kapat
+                });
+
                 return "Giriş başarılı";
             }
             else
@@ -47,7 +49,8 @@ namespace FileAnalyzerForm
             }
         }
 
-        public string filePrefer(int prefer)
+
+        public string FilePrefer(int prefer)
         {
             OpenFileDialog of = new OpenFileDialog();
             switch (prefer)
@@ -75,7 +78,7 @@ namespace FileAnalyzerForm
             return null;
         }
 
-        public int conjunctionSay(string file, int prefer)
+        public int ConjunctionSay(string file, int prefer)
         {
             string[] conjunctions = { "ve", "veya", "ama", "fakat", "ancak", "çünkü", "ile", "zira" };
             int counter = 0;
@@ -96,7 +99,7 @@ namespace FileAnalyzerForm
                 {
                     page.Accept(textAbsorber);
                     string pageText = textAbsorber.Text;
-                    counter += conjunctions.Sum(conj => countOccurrences(pageText, conj));
+                    counter += conjunctions.Sum(conj => CountOccurrences(pageText, conj));
                 }
             }
             else if (prefer == 3) // Word Dosyası
@@ -104,14 +107,14 @@ namespace FileAnalyzerForm
                 Aspose.Words.Document wordDocument = new Aspose.Words.Document(file);
                 foreach (Aspose.Words.Paragraph paragraph in wordDocument.GetChildNodes(NodeType.Paragraph, true))
                 {
-                    counter += conjunctions.Sum(conj => countOccurrences(paragraph.Range.Text, conj));
+                    counter += conjunctions.Sum(conj => CountOccurrences(paragraph.Range.Text, conj));
                 }
             }
 
             return counter;
         }
 
-        public int countOccurrences(string text, string word)
+        public int CountOccurrences(string text, string word)
         {
             int count = 0, index = 0;
             while ((index = text.IndexOf(word, index, StringComparison.OrdinalIgnoreCase)) != -1)
@@ -122,12 +125,12 @@ namespace FileAnalyzerForm
             return count;
         }
 
-        public void totalWordSay(string file, int prefer)
+        public void TotalWordSay(string file, int prefer)
         {
-            int conjunctionTotal = conjunctionSay(file, prefer);
-            int numberTotal = numberSay(file, prefer);
-            int punctuationTotal = punctuationSay(file, prefer);
-            int sentenceTotal = sentenceSay(file, prefer);
+            int conjunctionTotal = ConjunctionSay(file, prefer);
+            int numberTotal = NumberSay(file, prefer);
+            int punctuationTotal = PunctuationSay(file, prefer);
+            int sentenceTotal = SentenceSay(file, prefer);
             HashSet<string> wordSet = new HashSet<string>();
 
             if (prefer == 1) // TXT Dosyası
@@ -179,7 +182,7 @@ namespace FileAnalyzerForm
 
 
 
-        public int numberSay(string file, int prefer)
+        public int NumberSay(string file, int prefer)
         {
             int counter = 0;
             if (prefer == 1) // TXT Dosyası
@@ -211,7 +214,7 @@ namespace FileAnalyzerForm
             return counter;
         }
 
-        public int sentenceSay(string file, int prefer)
+        public int SentenceSay(string file, int prefer)
         {
             char[] sentenceEndings = { '.', '!', '?' };
             int counter = 0;
@@ -245,7 +248,7 @@ namespace FileAnalyzerForm
             return counter;
         }
 
-        public int punctuationSay(string file, int prefer)
+        public int PunctuationSay(string file, int prefer)
         {
             char[] punctuationMarks = { '.', ',', ';', ':', '!', '?', '"', '(', ')', '[', ']', '{', '}', '-', '_' };
             int counter = 0;
@@ -280,7 +283,7 @@ namespace FileAnalyzerForm
             return counter;
         }
 
-        public void wordSay(string file, int prefer)
+        public void WordSay(string file, int prefer)
         {
             char[] punctuation = new char[] { ' ', '.', ',', '?', '!', ':', ';', '-', '_', '(', ')', '[', ']', '{', '}', '<', '>', '/', '\\', '|', '*', '+', '=', '&', '%', '$', '#', '@', '^', '~', '`' };
 
@@ -316,7 +319,7 @@ namespace FileAnalyzerForm
                 // DataGridView'i güncelleme işlemi
                 foreach (var item in sortedWordSay)
                 {
-                    if (item.Value > 1)
+                    if (item.Value > 2)
                     {
                         gridView.Rows.Add(item.Key, item.Value);
                     }
@@ -359,7 +362,10 @@ namespace FileAnalyzerForm
                 // DataGridView'i güncelleyelim
                 foreach (var item in sortedWordSay)
                 {
-                    gridView.Rows.Add(item.Key, item.Value);
+                    if (item.Value > 2)
+                    {
+                        gridView.Rows.Add(item.Key, item.Value);
+                    }
                 }
 
                 Console.WriteLine("defa kullanılmıştır.");
@@ -394,28 +400,14 @@ namespace FileAnalyzerForm
 
                 foreach (var item in sortedWordSay)
                 {
-                    gridView.Rows.Add(item.Key, item.Value);
+                    if (item.Value > 2)
+                    {
+                        gridView.Rows.Add(item.Key, item.Value);
+                    }
                 }
             }
         }
 
-
-        public string login(string username, string password, Form currentForm)
-        {
-            if (username == "CCS" && password == "123")
-            {
-                MessageBox.Show("Giriş başarılı, Hoşgeldiniz", "INFO", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                currentForm.Hide();
-                programForm programForm = new programForm();
-                programForm.Show();
-                return "Giriş başarılı";
-            }
-            else
-            {
-                MessageBox.Show("Hatalı k.adı veya şifre", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return "Hatalı k.adı veya şifre";
-            }
-        }
     }
 }
 

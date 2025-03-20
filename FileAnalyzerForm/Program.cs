@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace FileAnalyzerForm
@@ -16,7 +13,14 @@ namespace FileAnalyzerForm
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new programForm());
+
+            loginForm login = new loginForm();
+
+            if (login.ShowDialog() == DialogResult.OK)
+            {
+                Application.Run(new programForm());
+            }
         }
+
     }
 }

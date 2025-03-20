@@ -1,19 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace FileAnalyzerForm
 {
     public partial class loginForm: Form
     {
-        private loginForm lF;
-        private Methods m;
         public loginForm()
         {
             InitializeComponent();
@@ -22,12 +13,21 @@ namespace FileAnalyzerForm
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
-            lF = new loginForm();
-            m = new Methods(lF);
             string username = txtUsername.Text;
             string password = txtPassword.Text;
 
-            string result = m.login(username, password, this);  // 'this' ile formu geçiriyoruz
+            // Methods sınıfının bir örneğini oluşturuyoruz
+            Methods methods = new Methods(this);
+
+            // Login metodunu çağırıyoruz
+            string result = methods.Login(username, password, this);
+
+            if (result == "Giriş başarılı")
+            {
+                this.DialogResult = DialogResult.OK; // Giriş başarılıysa formu kapat
+            }
         }
+
+
     }
 }
